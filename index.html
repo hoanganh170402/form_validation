@@ -52,9 +52,14 @@
             form:'#form-1',
             errorSelector:'.form-message',
             rules:[
-                  Validator.isName('#fullname'),
+                  Validator.isName('#fullname', 'Vui lòng nhập trường này'),
+                  Validator.isName('#email'),
                   Validator.isEmail('#email'),
-                  Validator.isPassword('#password')
+                  Validator.isPassword('#password'),
+                  Validator.isName('#password_confirmation'),
+                  Validator.isConfirmed('#password_confirmation', () => {
+                        return document.querySelector('#form-1 #password').value
+                  }, 'Mật khẩu không trùng hớp, vui lòng nhập lại')
             ]
       })
 </script>
