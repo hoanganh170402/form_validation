@@ -81,6 +81,9 @@ function Validator(options)
                               },{}/*Giá trị khởi tạo ban đầu*/)
                               options.onSubmit(formValues)
                         }
+                        else {
+                              formElement.submit()
+                        }
                   }
 
             }
