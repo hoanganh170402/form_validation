@@ -34,6 +34,8 @@ function Validator(options)
                   errorElement.innerText = ''
                   inputElement.parentElement.classList.remove('invalid')
             }
+
+            return !!errorMessage
       }
 
       // Lấy ra form mong muốn 
@@ -41,6 +43,49 @@ function Validator(options)
       // Kiểm tra xem formElement có tồn tại hay không?
       if (formElement)
       {     
+            // Xử lý khi submit form
+            formElement.onsubmit = (e) => {
+                  e.preventDefault();
+
+                  var isFormError = false;
+
+                  // Lặp qua từng rule và validate luôn
+                  options.rules.forEach((rule) => {
+                        var inputElement = formElement.querySelector(rule.selector)
+                        var isValid = validate(inputElement, rule)
+                        if(isValid)
+                        {
+                              isFormError = true
+                        }
+                  })
+
+                  if(!isFormError)
+                  {
+                        if(typeof options.onSubmit === 'function')
+                        {
+                              var enableInputs = formElement.querySelectorAll('[name]:not([disabled])')
+                              // console.log(enableInputs)
+                              // NOTE: Hiện tại enableInputs đang là NodesList nên phải ép kiểu thành array mới dùng phương thức reduce được
+                              var formValues = Array.from(enableInputs).reduce((values, input) => {
+                                    // 
+                                    // NOTE: console.log(values) là giá trị khởi tạo ban đầu, ở đây là 1 objet
+                                    // NOTE: console.log(input) là từng phần tử trong enableInputs 
+                                    // NOTE: console.log(input.name) thì chẳng khác nào key ( hay còn gọi là selector)
+                                    // NOTE: console.log(input.value) thì chẳng khác nào value ( người dùng nhập vào)
+            
+                                    // NOTE: truyền key vào value vào object
+                                    values[input.name] = input.value
+            
+                                    // Trả về object lưu giá trị
+                                    return values 
+                              },{}/*Giá trị khởi tạo ban đầu*/)
+                              options.onSubmit(formValues)
+                        }
+                  }
+
+            }
+
+            // Lặp qua các rule và xử lý ( lắng nghe sự kiện blur, input, ...)
             options.rules.forEach((rule) => {
 
                   var inputElement = formElement.querySelector(rule.selector)
