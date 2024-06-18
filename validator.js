@@ -8,6 +8,14 @@ function Validator (options)
             // tạo biến rules để hiển thị tất cả các rule của selector
             // Chúng ta cần lặp qua từng rule, và nếu bị lỗi thì sẽ dừng lại và hiển thị lỗi của rule đó 
             // IPT: rules[i] không khác gì rule.test, cứ mở ngoặc để truyền value vào
+      // Giờ muốn onSubmit 
+            // Trước tiên thì cần loại bỏ onsubmit mặc định
+            // Kiểm tra xem, nếu có lỗi thì phải validate ngay
+                  // Làm sao để kiểm tra xem, nếu chỉ có 1 lỗi cũng sẽ validate 
+            // Trong trường hợp không có lỗi thì hiển thị tất cả các value người dùng đã nhập vào
+                  // Đầu tiên là lặp qua tất cả các input trong form 
+                  // chuyển NodeList thành 1 array để dùng phương thức reduce để trả về 1 kết quả
+
       const selectorRules = {}
 
       function Validate(rule,inputElement) {
@@ -35,12 +43,64 @@ function Validator (options)
                   errorElement.innerText = ''
                   inputElement.parentElement.classList.remove('invalid')
             }
+
+            // Nếu có lỗi thì sẽ trả về true, không có lỗi thì là false
+            // console.log(!!errorMessage)
+            return !!errorMessage
       }
 
       const formElement = document.querySelector(options.form);
 
       if (formElement)
       {
+            formElement.onsubmit = (e) => {
+                  // Bỏ đi trạng thái mặc định của onsubmit
+                  e.preventDefault()
+
+                  var formError = false
+
+                  // Mong muốn là khi submit, nếu có error là báo
+                  options.rules.forEach((rule) => {
+                        const inputElement = formElement.querySelector(rule.selector);
+                        var isValid = Validate(rule,inputElement)
+                        if(isValid)
+                        {
+                              formError = true
+                        }
+                  })
+
+                  if(!formError)
+                  {
+                        if(typeof options.onSubmit === 'function')
+                        {
+                              // Lặp qua tất cả các input trong fromElement và được trả về 1 NodeList
+                              var enableInputs = formElement.querySelectorAll('[name]:not([disabled]')
+
+                              // chuyển NodeList thành 1 array để dùng phương thức reduce để trả về 1 kết quả
+                              const formValues = Array.from(enableInputs).reduce((values, input) => {
+                                    // NOTE: console.log(values) -> giá trị khởi tạo ban đầu
+                                    // NOTE: console.log(input) là từng phần tử trong enableInputs 
+                                    // NOTE: console.log(input.name) thì chẳng khác nào key ( hay còn gọi là selector)
+                                    // NOTE: console.log(input.value) thì chẳng khác nào value ( người dùng nhập vào)
+
+                                    // NOTE: truyền key vào value vào object
+                                    values[input.name] = input.value
+
+                                    // Trả về object lưu giá trị
+                                    return values
+                              }, {} /* Giá trị khởi tạo ban đầu */)
+
+                              options.onSubmit(formValues)
+                        }
+                        else
+                        {
+                              formElement.submit()
+                        }
+                  }
+            }
+
+
+            
             options.rules.forEach((rule) => {
                   const inputElement = formElement.querySelector(rule.selector);
 

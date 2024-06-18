@@ -60,7 +60,10 @@
                   Validator.isConfirmed('#password_confirmation', () => {
                         return document.querySelector('#form-1 #password').value
                   }, 'Mật khẩu không trùng hớp, vui lòng nhập lại')
-            ]
+            ],
+            onSubmit : (data) => {
+                  console.log(data);
+            }
       })
 </script>
 </html>
