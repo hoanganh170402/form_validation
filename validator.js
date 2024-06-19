@@ -1,12 +1,29 @@
+// ERROR: trong trường hợp thẻ input có quá nhiều thành phần cha sẽ gây ra bug 
+      // - tạo ra 1 hàm getParent để lặp qua tất cả các thành phần cha, hàm nào đúng thì trả về hàm đó
+// ERROR: trong trường hợp thẻ input có type bằng radio thì value luôn được trả về và tạo ra bug 
+      // - 
 
 // Đối tượng Validator
 function Validator(options)
 {     
       // lưu tất cả các rule của các selector
       var selectorRules = {}
+
+      // hàm lấy ra parentElement 
+      function getParent(element, selector) {
+            while (element.parentElement)
+            {
+                  if(element.parentElement.matches(selector))
+                  {
+                        return element.parentElement
+                  }
+                  element = element.parentElement
+            }
+      }
+
       // Hàm để kiểm tra lỗi
       function validate (inputElement, rule) {
-            var errorElement = inputElement.parentElement.querySelector(options.errorSelector)
+            var errorElement = getParent(inputElement, options.formSelector).querySelector(options.errorSelector)
             // value: inputElement.value
             // test function : rule.test
             var errorMessage  // = rule.test(inputElement.value);
@@ -18,8 +35,16 @@ function Validator(options)
             // Nếu có lỗi thì dừng kiểm tra 
             for ( var i = 0; i < rules.length ; i++)
             {
-                  // rules[i] giống như rule.test -> nên mở ngoặc để chạy hàm rồi truyền value vào
-                  errorMessage = rules[i](inputElement.value)
+                  switch(inputElement.type)
+                  {
+                        case 'radio':
+                        case 'checkbox':
+                              errorMessage = rules[i](inputElement.value)
+                              break;
+                        default:
+                              // rules[i] giống như rule.test -> nên mở ngoặc để chạy hàm rồi truyền value vào
+                              errorMessage = rules[i](inputElement.value)
+                  }
                   if (errorMessage) break
             }
 
@@ -27,12 +52,12 @@ function Validator(options)
             if (errorMessage)
             {
                   errorElement.innerText = errorMessage
-                  inputElement.parentElement.classList.add('invalid')
+                  getParent(inputElement, options.formSelector).classList.add('invalid')
             }
             else
             {
                   errorElement.innerText = ''
-                  inputElement.parentElement.classList.remove('invalid')
+                  getParent(inputElement, options.formSelector).classList.remove('invalid')
             }
 
             return !!errorMessage
@@ -113,9 +138,9 @@ function Validator(options)
 
                         // Xử lý khi người dùng đang nhập
                         inputElement.oninput = () =>{ 
-                              var errorElement = inputElement.parentElement.querySelector(options.errorSelector)
+                              var errorElement = getParent(inputElement, options.formSelector).querySelector(options.errorSelector)
                               errorElement.innerText = ''
-                              inputElement.parentElement.classList.remove('invalid')
+                              getParent(inputElement, options.formSelector).classList.remove('invalid')
                         }
                   }
             })

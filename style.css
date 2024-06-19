@@ -49,6 +49,24 @@ html {
       flex-direction: column;
 }
 
+.form-group.flex-row .options 
+{
+      font-size: 1.6rem;
+      line-height: 1.5;
+      display: flex;
+      justify-content: space-between;
+}
+
+.form-group.flex-row div
+{
+      display: flex;
+      align-items: center;
+}
+
+.form-group.flex-row div input {
+      margin-left: 10px;
+}
+
 .form-label,
 .form-message {
       text-align: left;
