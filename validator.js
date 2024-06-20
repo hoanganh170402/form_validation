@@ -1,6 +1,15 @@
 // ERROR: trong trường hợp thẻ input có quá nhiều thành phần cha sẽ gây ra bug 
       // - tạo ra 1 hàm getParent để lặp qua tất cả các thành phần cha, hàm nào đúng thì trả về hàm đó
-// ERROR: trong trường hợp thẻ input có type bằng radio thì value luôn được trả về và tạo ra bug 
+// ERROR: trong trường hợp thẻ input có type bằng radio thì value luôn được trả về và tạo ra bug
+      // - tạo switch case ở hàm validate 
+            // - chia ra xem inputElement có type là gì và giải quyết 
+      // - Khi check thì chỉ thằng đầu tiên mới hết lỗi, còn check các thằng tiếp theo vẫn lổi 
+            // - do thằng inputElement nó  chỉ lấy có 1 selector, thay vào đó thì chuyển thành querySelectorAll và lặp qua để lấy tất cả các inputElement
+      // Khi submit thì dữ liệu của gender trả về không đúng
+            // Ở formValues lặp qua từng phần tử 1, nên thành ra kết quả của gender luôn trả về là other - tạo switch case để lấy ra các trường hợp 
+                  // Trong trường hợp input là checkbox
+                  // Trong trường hợp input là radio
+                  // Trong trường hợp input là file
 
 function Validator (options) 
 {     
@@ -49,7 +58,9 @@ function Validator (options)
                   {
                         case 'radio':
                         case 'checkbox':
-                              errorMessage = rules[i](inputElement.value)
+                              errorMessage = rules[i](
+                                    formElement.querySelector(rule.selector + ':checked')
+                              )
                               break;
                         default :
                         errorMessage = rules[i](inputElement.value)
@@ -108,9 +119,35 @@ function Validator (options)
                                     // NOTE: console.log(input.name) thì chẳng khác nào key ( hay còn gọi là selector)
                                     // NOTE: console.log(input.value) thì chẳng khác nào value ( người dùng nhập vào)
 
-                                    // NOTE: truyền key vào value vào object
-                                    values[input.name] = input.value
+                                    switch(input.type)
+                                    {
+                                          case 'checkbox':
+                                                if(!Array.isArray(values[input.name]))
+                                                {
+                                                      values[input.name] = []
+                                                }
 
+                                                if(input.checked)
+                                                {
+                                                      values[input.name].push(input.value)
+                                                }
+                                                break
+
+                                          case 'radio':
+                                                if(input.checked)
+                                                {
+                                                      values[input.name] = input.value
+                                                }
+                                                break
+
+                                          case 'file':
+                                                values[input.name] = input.files
+                                                break
+
+                                          default:
+                                                // NOTE: truyền key vào value vào object
+                                                values[input.name] = input.value
+                                    }
                                     // Trả về object lưu giá trị
                                     return values
                               }, {} /* Giá trị khởi tạo ban đầu */)
@@ -127,7 +164,21 @@ function Validator (options)
 
             
             options.rules.forEach((rule) => {
-                  const inputElement = formElement.querySelector(rule.selector);
+                  const inputElements = formElement.querySelectorAll(rule.selector);
+
+                  Array.from(inputElements).forEach((inputElement) => {
+                        // Xử lý khi blur ra ngoài 
+                        inputElement.onblur = () =>{
+                              Validate(rule,inputElement)
+                        }
+
+                        // Xử lý khi đang nhập 
+                        inputElement.oninput = () =>{
+                              const errorElement = getParent(inputElement, options.formGroupSelector).querySelector(options.errorSelector)
+                              errorElement.innerText = ''
+                              getParent(inputElement, options.formGroupSelector).classList.remove('invalid')
+                        }
+                  })
 
                   // Khi mới đầu vào thì selectorRules[rule.selector] chưa phải là array nên là phải chạy ở else trước
                   if(Array.isArray(selectorRules[rule.selector]))
@@ -139,18 +190,6 @@ function Validator (options)
                         // Khi vào đây ta sẽ chuyển rule vào array
                         selectorRules[rule.selector]  = [rule.test]
                   }
-                  
-                  // Xử lý khi blur ra ngoài 
-                  inputElement.onblur = () =>{
-                        Validate(rule,inputElement)
-                  }
-
-                  // Xử lý khi đang nhập 
-                  inputElement.oninput = () =>{
-                        const errorElement = getParent(inputElement, options.formGroupSelector).querySelector(options.errorSelector)
-                        errorElement.innerText = ''
-                        getParent(inputElement, options.formGroupSelector).classList.remove('invalid')
-                  }
             })
       }
 }
@@ -159,7 +198,7 @@ Validator.isRequired = (selector, message) => {
       return {
             selector : selector,
             test: (value) => {
-                  return value.trim() ? undefined : message || 'Vui lòng nhập trường này!'
+                  return value ? undefined : message || 'Vui lòng nhập trường này!'
             }
       }
 }

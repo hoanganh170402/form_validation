@@ -42,6 +42,25 @@
                         <span class="form-message"></span>
                   </div>
 
+                  <!-- province -->
+                  <div class="form-group">
+                        <label for="province" class="form-label">Nhập lại mật khẩu</label>
+                        <select id="province" name="province" class="form-control"> 
+                              <option value="">--- Tỉnh / Thành Phố ---</option>
+                              <option value="SG">Sài Gòn</option>
+                              <option value="BH">Biên Hoà</option>
+                              <option value="DN">Đồng Nai</option>
+                        </select>
+                        <span class="form-message"></span>
+                  </div>
+
+                  <!-- ava -->
+                  <div class="form-group">
+                        <label for="ava" class="form-label">Ava</label>
+                        <input id="ava" name="ava" type="file" class="form-control">
+                        <span class="form-message"></span>
+                  </div>
+
                   <!-- gender -->
                   <div class="form-group flex-row">
                         <label for="gender" class="form-label">Giới tính</label>
@@ -62,6 +81,26 @@
                         <span class="form-message"></span>
                   </div>
 
+                  <!-- gender -->
+                  <div class="form-group flex-row">
+                        <label for="gender" class="form-label">Giới tính</label>
+                        <div class="options">
+                              <div>
+                                    Game
+                                    <input name="hobbies" type="checkbox" value="Game" class="form-control">
+                              </div>
+                              <div>
+                                    Code
+                                    <input name="hobbies" type="checkbox" value="Code" class="form-control">
+                              </div>
+                              <div>
+                                    Coffee
+                                    <input name="hobbies" type="checkbox" value="Coffee" class="form-control">
+                              </div>
+                        </div>
+                        <span class="form-message"></span>
+                  </div>
+
                   <button class="form-submit">Đăng ký</button>
             </form>
       </div>
@@ -73,15 +112,19 @@
             formGroupSelector: '.form-group',
             errorSelector:'.form-message',
             rules:[
-                  Validator.isRequired('#fullname', 'Vui lòng nhập trường này'),
-                  Validator.isRequired('#email'),
-                  Validator.isEmail('#email'),
-                  Validator.isPassword('#password'),
-                  Validator.isRequired('#password_confirmation'),
-                  Validator.isConfirmed('#password_confirmation', () => {
-                        return document.querySelector('#form-1 #password').value
-                  }, 'Mật khẩu không trùng hớp, vui lòng nhập lại'),
-                  Validator.isRequired('input[name="gender"]'),
+                  // Validator.isRequired('#fullname', 'Vui lòng nhập trường này'),
+                  // Validator.isRequired('#email'),
+                  // Validator.isEmail('#email'),
+                  // Validator.isPassword('#password'),
+                  // Validator.isRequired('#password_confirmation'),
+                  // Validator.isConfirmed('#password_confirmation', () => {
+                  //       return document.querySelector('#form-1 #password').value
+                  // }, 'Mật khẩu không trùng hớp, vui lòng nhập lại'),
+                  // Validator.isRequired('input[name="gender"]'),
+                  // Validator.isRequired('input[name="hobbies"]'),
+                  Validator.isRequired('#province'),
+                  Validator.isRequired('#ava'),
+                  
             ],
             onSubmit : (data) => {
                   console.log(data);
