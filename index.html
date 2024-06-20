@@ -42,6 +42,26 @@
                         <span class="form-message"></span>
                   </div>
 
+                  <!-- gender -->
+                  <div class="form-group flex-row">
+                        <label for="gender" class="form-label">Giới tính</label>
+                        <div class="options">
+                              <div>
+                                    Nam
+                                    <input name="gender" type="radio" value="male" class="form-control">
+                              </div>
+                              <div>
+                                    Nữ
+                                    <input name="gender" type="radio" value="female" class="form-control">
+                              </div>
+                              <div>
+                                    Khác
+                                    <input name="gender" type="radio" value="another" class="form-control">
+                              </div>
+                        </div>
+                        <span class="form-message"></span>
+                  </div>
+
                   <button class="form-submit">Đăng ký</button>
             </form>
       </div>
@@ -50,16 +70,18 @@
 <script>
       Validator({
             form:'#form-1',
+            formGroupSelector: '.form-group',
             errorSelector:'.form-message',
             rules:[
-                  Validator.isName('#fullname', 'Vui lòng nhập trường này'),
-                  Validator.isName('#email'),
+                  Validator.isRequired('#fullname', 'Vui lòng nhập trường này'),
+                  Validator.isRequired('#email'),
                   Validator.isEmail('#email'),
                   Validator.isPassword('#password'),
-                  Validator.isName('#password_confirmation'),
+                  Validator.isRequired('#password_confirmation'),
                   Validator.isConfirmed('#password_confirmation', () => {
                         return document.querySelector('#form-1 #password').value
-                  }, 'Mật khẩu không trùng hớp, vui lòng nhập lại')
+                  }, 'Mật khẩu không trùng hớp, vui lòng nhập lại'),
+                  Validator.isRequired('input[name="gender"]'),
             ],
             onSubmit : (data) => {
                   console.log(data);

@@ -1,3 +1,7 @@
+// ERROR: trong trường hợp thẻ input có quá nhiều thành phần cha sẽ gây ra bug 
+      // - tạo ra 1 hàm getParent để lặp qua tất cả các thành phần cha, hàm nào đúng thì trả về hàm đó
+// ERROR: trong trường hợp thẻ input có type bằng radio thì value luôn được trả về và tạo ra bug 
+
 function Validator (options) 
 {     
       // Điều mong muốn là : 1 selector có nhiều rule
@@ -18,8 +22,21 @@ function Validator (options)
 
       const selectorRules = {}
 
+      function getParent(input, selector) {
+            while(input.parentElement)
+            {
+                  // TIPS: Phương thức matches trong JavaScript là một phương thức của đối tượng Element. Nó được sử dụng để kiểm tra xem phần tử hiện tại có khớp với một selector CSS cụ thể hay không.
+                  if(input.parentElement.matches(selector))
+                  {
+                        // console.log(input.parentElement);
+                        return input.parentElement
+                  }
+                  input = input.parentElement
+            }
+      }
+
       function Validate(rule,inputElement) {
-            const errorElement = inputElement.parentElement.querySelector(options.errorSelector)
+            const errorElement = getParent(inputElement, options.formGroupSelector).querySelector(options.errorSelector)
             // value: inputElement.value
             // test function : rule.test()
             var errorMessage // = rule.test(inputElement.value);
@@ -28,7 +45,15 @@ function Validator (options)
 
             for(var i = 0; i < rules.length; i++)
             {
-                  errorMessage = rules[i](inputElement.value)
+                  switch(inputElement.type)
+                  {
+                        case 'radio':
+                        case 'checkbox':
+                              errorMessage = rules[i](inputElement.value)
+                              break;
+                        default :
+                        errorMessage = rules[i](inputElement.value)
+                  }
                   // Nếu có lỗi thì break và hiển thị lỗi đó và không lặp qua rule kế tiếp
                   if(errorMessage) break
             }
@@ -36,12 +61,12 @@ function Validator (options)
             if (errorMessage)
             {
                   errorElement.innerText = errorMessage
-                  inputElement.parentElement.classList.add('invalid')
+                  getParent(inputElement, options.formGroupSelector).classList.add('invalid')
             }
             else
             {
                   errorElement.innerText = ''
-                  inputElement.parentElement.classList.remove('invalid')
+                  getParent(inputElement, options.formGroupSelector).classList.remove('invalid')
             }
 
             // Nếu có lỗi thì sẽ trả về true, không có lỗi thì là false
@@ -122,15 +147,15 @@ function Validator (options)
 
                   // Xử lý khi đang nhập 
                   inputElement.oninput = () =>{
-                        const errorElement = inputElement.parentElement.querySelector(options.errorSelector)
+                        const errorElement = getParent(inputElement, options.formGroupSelector).querySelector(options.errorSelector)
                         errorElement.innerText = ''
-                        inputElement.parentElement.classList.remove('invalid')
+                        getParent(inputElement, options.formGroupSelector).classList.remove('invalid')
                   }
             })
       }
 }
 
-Validator.isName = (selector, message) => {
+Validator.isRequired = (selector, message) => {
       return {
             selector : selector,
             test: (value) => {
