@@ -42,21 +42,40 @@
                         <span class="form-message"></span>
                   </div>
 
+                  <!-- Avatar -->
+                  <div class="form-group">
+                        <label for="avatar" class="form-label">Ava</label>
+                        <input id="avatar" name="avatar" type="file" class="form-control">
+                        <span class="form-message"></span>
+                  </div>
+
+                  <!-- province -->
+                  <div class="form-group">
+                        <label for="province" class="form-label">Tỉnh thành </label>
+                        <select id="province" name="province" class="form-control"> 
+                              <option value=""> -- Chọn Tỉnh/ Thành Phố </option>
+                              <option value="BH">Biên Hoà</option>
+                              <option value="HN">Hà Nội</option>
+                              <option value="DN">Đồng Nai</option>
+                        </select>
+                        <span class="form-message"></span>
+                  </div>
+
                   <!-- gender -->
                   <div class="form-group flex-row">
                         <label for="gender" class="form-label">Giới tính</label>
                         <div class="options">
                               <div>
                                     Nam
-                                    <input name="gender" type="radio" value = "male"  class="form-control">
+                                    <input name="gender" type="checkbox" value = "male"  class="form-control">
                               </div>
                               <div>
                                     Nữ
-                                    <input name="gender" type="radio" value = "female" class="form-control">
+                                    <input name="gender" type="checkbox" value = "female" class="form-control">
                               </div>
                               <div>
                                     Khác
-                                    <input name="gender" type="radio" value = "another" class="form-control">
+                                    <input name="gender" type="checkbox" value = "another" class="form-control">
                               </div>
                         </div>
                         <span class="form-message"></span>
@@ -75,15 +94,17 @@
             formSelector:'.form-group',
             errorSelector: '.form-message',
             rules:[
-                  Validator.isRequired('#fullname'),
-                  Validator.isRequired('#email'),
-                  Validator.isEmail('#email', 'Trường này phải là Email'),
-                  Validator.minLength('#password'),
-                  Validator.isRequired('#password_confirmation'),
-                  Validator.isConfirmed('#password_confirmation', () => {
-                        return document.querySelector('#form-1 #password').value
-                  }, 'Mật khẩu không khớp, vui lòng nhập lại'),
-                  Validator.isRequired('input[name="gender"]'),
+                  // Validator.isRequired('#fullname'),
+                  // Validator.isRequired('#email'),
+                  Validator.isRequired('#avatar'),
+                  // Validator.isEmail('#email', 'Trường này phải là Email'),
+                  // Validator.minLength('#password'),
+                  // Validator.isRequired('#password_confirmation'),
+                  // Validator.isConfirmed('#password_confirmation', () => {
+                  //       return document.querySelector('#form-1 #password').value
+                  // }, 'Mật khẩu không khớp, vui lòng nhập lại'),
+                  // Validator.isRequired('input[name="gender"]'),
+                  Validator.isRequired('#province'),
             ],
             onSubmit : (data) => {
                   console.log(data);

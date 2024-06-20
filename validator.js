@@ -1,7 +1,17 @@
 // ERROR: trong trường hợp thẻ input có quá nhiều thành phần cha sẽ gây ra bug 
       // - tạo ra 1 hàm getParent để lặp qua tất cả các thành phần cha, hàm nào đúng thì trả về hàm đó
 // ERROR: trong trường hợp thẻ input có type bằng radio thì value luôn được trả về và tạo ra bug 
-      // - 
+      // - Chúng ta vào hàm validate để thêm switch case, chỉ khi nào inputElement có type bằng checkbox hoặc radio thì mới giải quyết, còn lại thì chạy như thường
+            // Khi vào case checkbox hoặc radio thì chúng ta mong muốn chỉ lấy ra nhưng cái nào được checked thôi
+                  // sau khi giải quyết sẽ có 1 bug là phương thức trim() ở rule isRequired  - cách giải quyết là bỏ trim() đi 
+                  // bug tiếp theo là khi không checked và submit, chỉ có thằng đầu tiên khi check thì mới hết báo lỗi, còn 2 thằng ở dưới thì không tự hết báo lỗi - fix ở inputElement, vì khi dùng type là checkbox hay radio thì sẽ có nhiều thằng trùng cái selector. Chúng ta chuyển querySelector thành querySelectorAll, sau đó lặp qua để lấy tất cả các thằng inputElement 
+            // Khi submit ra thì kết quả chỉ trả về là other 
+                  // Di chuyển đến submit với js và thêm 1 switch case vào. 
+                        // Trong trường hợp input.type là radio - chúng ta sẽ chọn ra cái thẻ đang được checked
+                        // Trong trường hợp input.type là checkbox 
+                              // Mong muốn nhận 1 array, trong array đó có tất cả các value mà người dùng check, còn tron trường hợp không check thì trả về 1 array trống
+                        // Trong trường hợp là file
+                              // Mong muốn là trả về 1 fileList 
 
 // Đối tượng Validator
 function Validator(options)
@@ -39,7 +49,11 @@ function Validator(options)
                   {
                         case 'radio':
                         case 'checkbox':
-                              errorMessage = rules[i](inputElement.value)
+                              // trong trường hợp là checkbox, radio
+                              errorMessage = rules[i](
+                                    // chúng ta lấy từ formElement sau đó chọn ra selector nào của checkbox hay radio được checked
+                                    formElement.querySelector(rule.selector + ':checked')
+                              )
                               break;
                         default:
                               // rules[i] giống như rule.test -> nên mở ngoặc để chạy hàm rồi truyền value vào
@@ -86,21 +100,45 @@ function Validator(options)
 
                   if(!isFormError)
                   {
+                        // Submit với js 
                         if(typeof options.onSubmit === 'function')
                         {
                               var enableInputs = formElement.querySelectorAll('[name]:not([disabled])')
                               // console.log(enableInputs)
                               // NOTE: Hiện tại enableInputs đang là NodesList nên phải ép kiểu thành array mới dùng phương thức reduce được
                               var formValues = Array.from(enableInputs).reduce((values, input) => {
-                                    // 
                                     // NOTE: console.log(values) là giá trị khởi tạo ban đầu, ở đây là 1 objet
                                     // NOTE: console.log(input) là từng phần tử trong enableInputs 
                                     // NOTE: console.log(input.name) thì chẳng khác nào key ( hay còn gọi là selector)
                                     // NOTE: console.log(input.value) thì chẳng khác nào value ( người dùng nhập vào)
             
-                                    // NOTE: truyền key vào value vào object
-                                    values[input.name] = input.value
-            
+                                    switch(input.type)
+                                    {
+                                          case 'radio' :
+                                                values[input.name] = formElement.querySelector('input[name ="'+input.name+'"]:checked').value;
+                                                break
+                                          case 'checkbox' :
+                                                if(input.matches(':checked'))
+                                                {
+                                                      if(!Array.isArray(values[input.name]))
+                                                      {
+                                                            values[input.name] = []
+                                                      }
+                                                      values[input.name].push(input.value)
+                                                }
+                                                else
+                                                {
+                                                      values[input.name] = ''
+                                                      return values
+                                                }
+                                                break
+                                          case 'file' : 
+                                                values[input.name] = input.files
+                                                break
+                                          default:
+                                                // NOTE: truyền key vào value vào object
+                                                values[input.name] = input.value
+                                    }
                                     // Trả về object lưu giá trị
                                     return values 
                               },{}/*Giá trị khởi tạo ban đầu*/)
@@ -110,13 +148,29 @@ function Validator(options)
                               formElement.submit()
                         }
                   }
-
             }
 
             // Lặp qua các rule và xử lý ( lắng nghe sự kiện blur, input, ...)
             options.rules.forEach((rule) => {
 
-                  var inputElement = formElement.querySelector(rule.selector)
+                  var inputElements = formElement.querySelectorAll(rule.selector)
+
+                  Array.from(inputElements).forEach((inputElement) => {
+                        if(inputElement)
+                        {
+                              // Xử lý khi người dùng blur ra ngoài
+                              inputElement.onblur = () => {
+                                    validate(inputElement, rule)
+                              }
+      
+                              // Xử lý khi người dùng đang nhập
+                              inputElement.oninput = () =>{ 
+                                    var errorElement = getParent(inputElement, options.formSelector).querySelector(options.errorSelector)
+                                    errorElement.innerText = ''
+                                    getParent(inputElement, options.formSelector).classList.remove('invalid')
+                              }
+                        }
+                  })
 
                   // IPT: selectorRules[rule.selector là KEY còn rule.test là VALUE
                   if(Array.isArray(selectorRules[rule.selector]))
@@ -127,21 +181,6 @@ function Validator(options)
                   }else {
                         // Khi mới chạy thì sẽ không phải là mảng nên sẽ chạy ở đây trước
                         selectorRules[rule.selector] = [rule.test]
-                  }
-
-                  if(inputElement)
-                  {
-                        // Xử lý khi người dùng blur ra ngoài
-                        inputElement.onblur = () => {
-                              validate(inputElement, rule)
-                        }
-
-                        // Xử lý khi người dùng đang nhập
-                        inputElement.oninput = () =>{ 
-                              var errorElement = getParent(inputElement, options.formSelector).querySelector(options.errorSelector)
-                              errorElement.innerText = ''
-                              getParent(inputElement, options.formSelector).classList.remove('invalid')
-                        }
                   }
             })
       }
@@ -156,7 +195,7 @@ Validator.isRequired = (selector, message) => {
       return {
             selector: selector,
             test: (value) => {
-                  return value.trim() ? undefined : message || 'Vui lòng nhập trường này!'
+                  return value ? undefined : message || 'Vui lòng nhập trường này!'
             }
       }
 }
